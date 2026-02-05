@@ -6,7 +6,7 @@
 /*
 * Taking the device from kernel's control and binds to terget_drv.
 */
-unbind(const char *pci, const char *target_drv, volatile u8 *trace )
+int unbind(const char *pci, const char *target_drv, volatile u8 *trace )
 {
     if (likely(trace)) {
         (*trace)++;

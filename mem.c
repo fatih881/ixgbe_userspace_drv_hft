@@ -8,8 +8,11 @@
  * Alloc 2 MB hugepage. Requires at least 1 available 2 MB hugepage on host kernel.
  * Writes virtual mem addr to rx_base in hw structure.
  */
-alloc_hugepage(struct hw *hw) 
-{
+int alloc_hugepage(struct hw *hw, volatile u8 *trace) 
+{   
+    if (likely(trace)) {
+        (*trace)++;
+    };
     void *dma = mmap(NULL,
          2 * 1024 * 1024, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0);
          if(unlikely(dma == MAP_FAILED)) {
@@ -18,14 +21,19 @@ alloc_hugepage(struct hw *hw)
          };
     memset(dma, 0, 2 * 1024 * 1024);
     hw->rx_base = dma;
-    return 0;
+    if (likely(trace)) {
+        (*trace)++;
+    }; return 0;
 };
 /*
  * Since Linux returns virtual mem addr in alloc_hugepage function,
  * it needs to be converted to physical addr to use on NIC.
  */
-virt2phy(struct hw *hw)
+int virt2phy(struct hw *hw, volatile u8 *trace)
 {   
+    if (likely(trace)) {
+        (*trace)++;
+    };
     u64 v_addr = (u64)hw->rx_base;
     u64 index = v_addr / sysconf(_SC_PAGESIZE);
 
@@ -34,21 +42,25 @@ virt2phy(struct hw *hw)
     u64 paddr;
 
     if (unlikely(fd < 0)) 
-        return ~0ULL;
+        return -1;
     if (unlikely(lseek(fd, index * sizeof(u64), SEEK_SET) < 0)) {
         close(fd);
-        return ~0ULL;
+        return -1;
     }
     if (unlikely(read(fd, &result, sizeof(result)) != sizeof(result))) {
         close(fd);
-        return ~0ULL;
+        return -1;
     }
     close(fd);
     // Checks is the addr is in ram or not. ( Swap Etc. )
     if (unlikely(!(result & (1ULL << 63)))) {
-        return ~0ULL;
+        return -1;
     }
     paddr = (result & ((1ULL << 55) - 1)) * sysconf(_SC_PAGESIZE);
     paddr += v_addr % sysconf(_SC_PAGESIZE);
-    return paddr;
+    if (likely(trace)) {
+        (*trace)++;
+    }; 
+    hw->rx_base_phy = paddr;
+    return 0;
 };
