@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 /*
-* Taking the device from kernel's control and binds to terget_drv.
+* Taking the device from kernel's control and binds to target_drv.
 */
 int unbind(const char *pci, const char *target_drv, volatile u8 *trace )
 {
@@ -12,11 +12,10 @@ int unbind(const char *pci, const char *target_drv, volatile u8 *trace )
         (*trace)++;
     }
     char path[128];
-    int fd;
     snprintf(path, sizeof(path), 
-        "/sys/bus/pci/devices/%s/driver_override", pci);
+             "/sys/bus/pci/devices/%s/driver_override", pci);
 
-    fd = open(path, O_WRONLY);
+    int fd = open(path, O_WRONLY);
     if (unlikely(fd < 0)) return -1;
     
     write(fd, target_drv, strlen(target_drv));

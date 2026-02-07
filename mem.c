@@ -1,6 +1,5 @@
 #include <sys/mman.h>
 #include <stdio.h>
-#include <stddef.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
@@ -25,7 +24,7 @@ int alloc_hugepage(struct hw *hw, volatile u8 *trace)
     if (likely(trace)) {
         (*trace)++;
     }; return 0;
-};
+}
 /*
  * Since Linux returns virtual mem addr in alloc_hugepage function,
  * it needs to be converted to physical addr to use on NIC.
@@ -35,12 +34,11 @@ int virt2phy(struct hw *hw, volatile u8 *trace)
     if (likely(trace)) {
         (*trace)++;
     };
-    u64 v_addr = (u64)hw->rx_base;
-    u64 index = v_addr / sysconf(_SC_PAGESIZE);
+    const u64 v_addr = (u64)hw->rx_base;
+    const u64 index = v_addr / sysconf(_SC_PAGESIZE);
 
-    int fd = open("/proc/self/pagemap", O_RDONLY);
+    const int fd = open("/proc/self/pagemap", O_RDONLY);
     u64 result;
-    u64 paddr;
 
     if (unlikely(fd < 0)) 
         return -1;
@@ -57,14 +55,14 @@ int virt2phy(struct hw *hw, volatile u8 *trace)
     if (unlikely(!(result & (1ULL << 63)))) {
         return -1;
     }
-    paddr = (result & ((1ULL << 55) - 1)) * sysconf(_SC_PAGESIZE);
+    u64 paddr = (result & ((1ULL << 55) - 1)) * sysconf(_SC_PAGESIZE);
     paddr += v_addr % sysconf(_SC_PAGESIZE);
     if (likely(trace)) {
         (*trace)++;
     }; 
     hw->rx_base_phy = paddr;
     return 0;
-};
+}
 /*
  * Implement memory map to access NIC registers from userspace.
  */
@@ -76,9 +74,9 @@ int mmap_bar0(struct hw *hw, volatile u8 *trace)
     char path [128];
     snprintf(path, sizeof(path),
      "/sys/bus/pci/devices/%s/resource0", hw->pci_addr);
-    int fd = open(path, O_RDWR | O_SYNC);
+    const int fd = open(path, O_RDWR | O_SYNC);
     /* O_SYNC flag ensures that we can edit NIC registers instantly.
-    Without it, CPU may couse latency between ;
+    Without it, CPU may cause latency between ;
     editing register on userspace - writing to NIC. */
     if (unlikely(fd < 0)) 
         return -1;
@@ -92,4 +90,4 @@ int mmap_bar0(struct hw *hw, volatile u8 *trace)
         (*trace)++;
     };
     return 0;
-}; 
+}

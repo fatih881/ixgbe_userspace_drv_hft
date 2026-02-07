@@ -4,11 +4,11 @@
 #include "base.h"
 #include "hw.h"
 
-static inline u32 ixgbe_read_reg(struct hw *hw, u32 reg) {
+static u32 ixgbe_read_reg(const struct hw *hw, const u32 reg) {
     return *((volatile u32 *)(hw->hw_addr + reg));
 }
 
-static inline void ixgbe_write_reg(struct hw *hw, u32 reg, u32 val) {
+static void ixgbe_write_reg(const struct hw *hw, const u32 reg, const u32 val) {
     *((volatile u32 *)(hw->hw_addr + reg)) = val;
 }
 #endif

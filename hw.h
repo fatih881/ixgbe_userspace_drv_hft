@@ -12,7 +12,7 @@ struct hw {
     volatile u32 *rdt_reg_addr;
     volatile u32 *rdh_reg_addr;
 };
-extern struct hw ixgbbe_adapter;
+extern struct hw ixgbe_adapter;
 struct trace
 {
     volatile u8 unbind_counter;
